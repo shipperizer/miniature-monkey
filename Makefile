@@ -17,6 +17,7 @@ build:
 
 test: mocks
 	$(GO) test -v ./... -cover -coverprofile=coverage.out -covermode=atomic
+	cat coverage.out | grep -v "mock_" > coverage.out
 
 mocks:
 	$(GO) get github.com/golang/mock/gomock

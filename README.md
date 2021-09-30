@@ -1,9 +1,9 @@
 # Miniature Monkey: small http framework layer built on top of gorilla/mux 
 
-![test](https://github.com/shipperizer/miniature-badge/workflows/test/badge.svg)
-![release](https://github.com/shipperizer/miniature-badge/workflows/release/badge.svg)
-[![codecov](https://codecov.io/gh/shipperizer/miniature-badge/branch/main/graph/badge.svg)](https://codecov.io/gh/shipperizer/miniature-badge)
-[![Go Reference](https://pkg.go.dev/badge/github.com/shipperizer/miniature-badge.svg)](https://pkg.go.dev/github.com/shipperizer/miniature-badge)
+![test](https://github.com/shipperizer/miniature-monkey/badge/workflows/test/badge.svg)
+![release](https://github.com/shipperizer/miniature-monkey/badge/workflows/release/badge.svg)
+[![codecov](https://codecov.io/gh/shipperizer/miniature-monkey/badge/branch/main/graph/badge.svg)](https://codecov.io/gh/shipperizer/miniature-monkey/badge)
+[![Go Reference](https://pkg.go.dev/badge/github.com/shipperizer/miniature-monkey.svg)](https://pkg.go.dev/github.com/shipperizer/miniature-monkey)
 
 
 # DOCS

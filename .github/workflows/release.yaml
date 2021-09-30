@@ -1,0 +1,29 @@
+name: release
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: GoogleCloudPlatform/release-please-action@v2
+        with:
+          release-type: simple
+          package-name: miniature-monkey
+        id: release
+      - uses: actions/checkout@v2
+      - name: Workaround for https://github.com/googleapis/release-please/issues/922
+        if: ${{ steps.release.outputs.pr != '' }}    
+        run: |
+          echo "Closing and reopening PR to trigger checks"
+          gh pr close ${{ steps.release.outputs.pr }} || true
+          gh pr reopen ${{ steps.release.outputs.pr }} || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+                   

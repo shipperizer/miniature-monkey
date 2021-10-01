@@ -1,5 +1,12 @@
 # Changelog
 
+### [1.0.1](https://www.github.com/shipperizer/miniature-monkey/compare/v1.0.0...v1.0.1) (2021-10-01)
+
+
+### Bug Fixes
+
+* adjust comments/docs ([fbc855b](https://www.github.com/shipperizer/miniature-monkey/commit/fbc855bffe4a523c9c82b88e5119085476d19864))
+
 ## 1.0.0 (2021-09-30)
 
 

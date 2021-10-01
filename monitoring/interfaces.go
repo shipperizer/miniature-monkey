@@ -13,7 +13,7 @@ type MonitorInterface interface {
 	Incr(metric string, opts map[string]string)
 }
 
-// MiddlewareInterface is the gorilla.mux Middleware interface
+// MiddlewareInterface
 type MiddlewareInterface interface {
 	APICount() mux.MiddlewareFunc
 	APITime() mux.MiddlewareFunc

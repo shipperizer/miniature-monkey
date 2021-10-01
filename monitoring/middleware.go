@@ -15,8 +15,7 @@ const (
 	IDPathRegex string = "{[a-zA-Z_]*}"
 )
 
-// Middleware is the monitoring middleware object implementing Prometheus gateway
-// monitoring
+// Middleware is the monitoring middleware object implementing Prometheus monitoring
 type Middleware struct {
 	monitor MonitorInterface
 	regex   *regexp.Regexp

@@ -16,11 +16,11 @@ type Blueprint struct{}
 
 // Routes exposes the handler on a route attached to the router
 func (bp *Blueprint) Routes(router *mux.Router) {
-	router.HandleFunc("/api/v1/status", bp.Status).Methods(http.MethodGet).Name("v1.status")
+	router.HandleFunc("/api/v1/status", bp.status).Methods(http.MethodGet).Name("v1.status")
 }
 
 // Status is a basic status endpoint returning ok
-func (bp Blueprint) Status(w http.ResponseWriter, r *http.Request) {
+func (bp Blueprint) status(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	resp := new(types.DataResponse)

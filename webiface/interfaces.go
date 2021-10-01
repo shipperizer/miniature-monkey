@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// APIInterface
 type APIInterface interface {
 	Router() *mux.Router
 	Handler() http.Handler
@@ -13,6 +14,7 @@ type APIInterface interface {
 	UseMiddlewares(r *mux.Router, mwf ...mux.MiddlewareFunc)
 }
 
+// BlueprintInterface
 type BlueprintInterface interface {
 	Routes(router *mux.Router)
 }

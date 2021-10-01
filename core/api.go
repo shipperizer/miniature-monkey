@@ -13,6 +13,10 @@ import (
 	"github.com/shipperizer/miniature-monkey/webiface"
 )
 
+// API is the main object to create a web application
+// has the config as attribute and it is basically a wrapper around a mux.Router
+// with helpers method to add endpoints (grouped via BlueprintInterface)
+// also monitor andlogger are attributes
 type API struct {
 	name string
 	cfg  config.APIConfigInterface

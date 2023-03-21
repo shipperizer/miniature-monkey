@@ -3,14 +3,16 @@ package core
 import (
 	"net/http"
 
-	"github.com/gorilla/mux"
-	"github.com/rs/cors"
-	"go.uber.org/zap"
+	chi "github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 
-	"github.com/shipperizer/miniature-monkey/config"
-	"github.com/shipperizer/miniature-monkey/monitoring"
-	"github.com/shipperizer/miniature-monkey/status"
-	"github.com/shipperizer/miniature-monkey/webiface"
+	"github.com/shipperizer/miniature-monkey/v2/logging"
+	"github.com/shipperizer/miniature-monkey/v2/middlewares/generics"
+	core "github.com/shipperizer/miniature-monkey/v2/monitoring/core"
+	web "github.com/shipperizer/miniature-monkey/v2/monitoring/web"
+
+	"github.com/shipperizer/miniature-monkey/v2/status"
+	"github.com/shipperizer/miniature-monkey/v2/webiface"
 )
 
 // API is the main object to create a web application
@@ -19,22 +21,25 @@ import (
 // also monitor andlogger are attributes
 type API struct {
 	name string
-	cfg  config.APIConfigInterface
+	cfg  APIConfigInterface
 
-	router *mux.Router
+	router *chi.Mux
 
-	monitor monitoring.MonitorInterface
-	logger  *zap.SugaredLogger
+	monitor core.MonitorInterface
+	logger  logging.LoggerInterface
 }
 
-// appplyCORS add a CORS wrapper arount the passed in handler if the API has CORS enabled
-func (a *API) applyCORS(h http.Handler) http.Handler {
-	if cfg := a.cfg.GetCORSConfig(); cfg == nil {
-		return h
-	} else {
-		origins := cfg.GetOrigins()
+func (a *API) useCORS() {
+	cfg := a.cfg.GetCORSConfig()
 
-		c := cors.New(
+	if cfg == nil {
+		return
+	}
+
+	origins := cfg.GetOrigins()
+
+	a.router.Use(
+		cors.Handler(
 			cors.Options{
 				AllowedOrigins: origins,
 				AllowedMethods: []string{
@@ -47,25 +52,26 @@ func (a *API) applyCORS(h http.Handler) http.Handler {
 				},
 				AllowedHeaders:   []string{"*"},
 				AllowCredentials: true,
+				MaxAge:           300, // Maximum value not ignored by any of major browsers
 			},
-		)
-		return c.Handler(h)
-	}
+		),
+	)
+
 }
 
 // Handler returns an http handler created from the main router
 func (a *API) Handler() http.Handler {
-	return a.applyCORS(a.router)
+	return a.router
 }
 
 // Router returns the main router
-func (a *API) Router() *mux.Router {
+func (a *API) Router() *chi.Mux {
 	return a.router
 }
 
 // UseMiddlewares will apply all the middleware functions to the passed in router
 // if no router r is passed, then the main one is used
-func (a *API) UseMiddlewares(r *mux.Router, mwf ...mux.MiddlewareFunc) {
+func (a *API) UseMiddlewares(r *chi.Mux, mwf ...func(http.Handler) http.Handler) {
 	if r == nil {
 		r = a.router
 	}
@@ -75,7 +81,7 @@ func (a *API) UseMiddlewares(r *mux.Router, mwf ...mux.MiddlewareFunc) {
 
 // UseMiddlewares will register all the blueprints to the passed in router
 // if no router r is passed, then the main one is used
-func (a *API) RegisterBlueprints(r *mux.Router, blueprints ...webiface.BlueprintInterface) {
+func (a *API) RegisterBlueprints(r *chi.Mux, blueprints ...webiface.BlueprintInterface) {
 	if r == nil {
 		r = a.router
 	}
@@ -87,28 +93,33 @@ func (a *API) RegisterBlueprints(r *mux.Router, blueprints ...webiface.Blueprint
 
 // NewAPI returns a new API object implementing webiface.APIInterface
 // by default the monitoring and status blueprints are registered and the APITimer and APICount middleware are applied
-func NewAPI(cfg config.APIConfigInterface) webiface.APIInterface {
+func NewAPI(cfg APIConfigInterface) *API {
 	api := new(API)
 	api.name = cfg.GetServiceName()
 	api.cfg = cfg
 	api.monitor = cfg.GetMonitor()
-	api.router = mux.NewRouter()
+	api.router = chi.NewMux()
 	api.logger = cfg.GetLogger()
+
+	// apply API timer and count middlewares by default
+	if api.monitor != nil {
+		mdws := make(chi.Middlewares, 0)
+
+		mdw := generics.NewMiddleware(api.monitor, api.logger)
+
+		mdws = append(mdws, mdw.APITime())
+
+		api.UseMiddlewares(nil, mdws...)
+	}
+
+	api.useCORS()
 
 	// register monitoring blueprint by default
 	api.RegisterBlueprints(
 		nil,
-		monitoring.NewBlueprint(),
+		web.NewBlueprint(),
 		status.NewBlueprint(),
 	)
-
-	// apply API timer and count middlewares by default
-	if api.monitor != nil {
-		mdw := monitoring.NewMiddleware(api.monitor, api.monitor.GetService())
-		mdws := make([]mux.MiddlewareFunc, 0)
-		mdws = append(mdws, mdw.APITime(), mdw.APICount())
-		api.UseMiddlewares(nil, mdws...)
-	}
 
 	return api
 }

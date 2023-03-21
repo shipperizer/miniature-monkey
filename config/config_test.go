@@ -5,32 +5,12 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 
-	"github.com/shipperizer/miniature-monkey/utils"
+	"github.com/shipperizer/miniature-monkey/v2/logging"
 )
 
 //go:generate mockgen -package config -destination ./mock_config.go -source=./interfaces.go CORSConfigInterface
-//go:generate mockgen -package config -destination ./mock_monitor.go -source=../monitoring/interfaces.go MonitorInterface
-
-func TestAPIConfigImplementsAPIConfigInterface(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockCORS := NewMockCORSConfigInterface(ctrl)
-	mockMonitor := NewMockMonitorInterface(ctrl)
-
-	cfg := NewAPIConfig(
-		"shipperizer",
-		mockCORS,
-		mockMonitor,
-		nil,
-	)
-
-	assert := assert.New(t)
-
-	assert.Implements((*APIConfigInterface)(nil), cfg, "object should have implemented APIConfigInterface")
-}
+//go:generate mockgen -package config -destination ./mock_monitor.go -source=../monitoring/core/interfaces.go MonitorInterface
 
 func TestAPIConfigGetCORSConfig(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -75,7 +55,7 @@ func TestAPIConfigGetLogger(t *testing.T) {
 	defer ctrl.Finish()
 	mockCORS := NewMockCORSConfigInterface(ctrl)
 	mockMonitor := NewMockMonitorInterface(ctrl)
-	logger := utils.NewLogger("debug")
+	logger := logging.NewLogger("debug")
 
 	cfg := NewAPIConfig(
 		"shipperizer",
@@ -104,9 +84,7 @@ func TestAPIConfigGetLoggerIfNilPassed(t *testing.T) {
 
 	assert := assert.New(t)
 
-	assert.IsType(&zap.SugaredLogger{}, cfg.GetLogger())
-	assert.True(cfg.GetLogger().Desugar().Core().Enabled(zapcore.ErrorLevel), "error level should be enabled")
-	assert.True(cfg.GetLogger().Desugar().Core().Enabled(zapcore.WarnLevel), "warning level should not be enabled")
+	assert.Implements((*logging.LoggerInterface)(nil), cfg.GetLogger())
 }
 
 func TestAPIConfigGetMonitor(t *testing.T) {

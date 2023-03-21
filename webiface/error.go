@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/shipperizer/miniature-monkey/types"
+	"github.com/shipperizer/miniature-monkey/v2/types"
 )
 
 func ProcessHttpError(err error, httpStatus int, w http.ResponseWriter) {

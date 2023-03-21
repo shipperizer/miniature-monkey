@@ -1,10 +1,8 @@
 package config
 
 import (
-	"go.uber.org/zap"
-
-	"github.com/shipperizer/miniature-monkey/monitoring"
-	"github.com/shipperizer/miniature-monkey/utils"
+	"github.com/shipperizer/miniature-monkey/v2/logging"
+	core "github.com/shipperizer/miniature-monkey/v2/monitoring/core"
 )
 
 // CORSConfig holds the origins to be CORS-allowed
@@ -18,7 +16,7 @@ func (c *CORSConfig) GetOrigins() []string {
 }
 
 // NewCORSConfig is the builder method to get a new CORSConfig
-func NewCORSConfig(origins ...string) CORSConfigInterface {
+func NewCORSConfig(origins ...string) *CORSConfig {
 	c := new(CORSConfig)
 	c.origins = origins
 
@@ -32,8 +30,8 @@ type APIConfig struct {
 
 	cors CORSConfigInterface
 
-	monitor monitoring.MonitorInterface
-	logger  *zap.SugaredLogger
+	monitor core.MonitorInterface
+	logger  logging.LoggerInterface
 }
 
 // GetServiceName returns the a friendly name for the service
@@ -42,7 +40,7 @@ func (c *APIConfig) GetServiceName() string {
 }
 
 // GetMonitor returns the monitor object
-func (c *APIConfig) GetMonitor() monitoring.MonitorInterface {
+func (c *APIConfig) GetMonitor() core.MonitorInterface {
 	return c.monitor
 }
 
@@ -52,12 +50,12 @@ func (c *APIConfig) GetCORSConfig() CORSConfigInterface {
 }
 
 // GetLogger returns the logger
-func (c *APIConfig) GetLogger() *zap.SugaredLogger {
+func (c *APIConfig) GetLogger() logging.LoggerInterface {
 	return c.logger
 }
 
 // NewAPIConfig returns a config object for the API object, if the logger arg is empty a new one with error level is created
-func NewAPIConfig(name string, cors CORSConfigInterface, monitor monitoring.MonitorInterface, logger *zap.SugaredLogger) APIConfigInterface {
+func NewAPIConfig(name string, cors CORSConfigInterface, monitor core.MonitorInterface, logger logging.LoggerInterface) *APIConfig {
 	c := new(APIConfig)
 	c.name = name
 	c.cors = cors
@@ -65,7 +63,7 @@ func NewAPIConfig(name string, cors CORSConfigInterface, monitor monitoring.Moni
 	c.logger = logger
 
 	if c.logger == nil {
-		c.logger = utils.NewLogger("error")
+		c.logger = logging.NewLogger("error")
 	}
 
 	return c

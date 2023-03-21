@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gorilla/mux"
+	chi "github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +20,7 @@ func TestMetricsBlueprintWorks(t *testing.T) {
 	assert.Equal(nil, err, "error should be nil")
 
 	rr := httptest.NewRecorder()
-	router := mux.NewRouter()
+	router := chi.NewMux()
 	bp.Routes(router)
 	router.ServeHTTP(rr, req)
 

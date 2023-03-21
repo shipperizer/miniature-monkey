@@ -6,21 +6,19 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gorilla/mux"
-
-	"github.com/shipperizer/miniature-monkey/types"
-	"github.com/shipperizer/miniature-monkey/webiface"
+	chi "github.com/go-chi/chi/v5"
+	"github.com/shipperizer/miniature-monkey/v2/types"
 )
 
 type Blueprint struct{}
 
 // Routes exposes the handler on a route attached to the router
-func (bp *Blueprint) Routes(router *mux.Router) {
-	router.HandleFunc("/api/v1/status", bp.status).Methods(http.MethodGet).Name("v1.status")
+func (bp *Blueprint) Routes(router *chi.Mux) {
+	router.Get("/api/v1/status", bp.status)
 }
 
 // Status is a basic status endpoint returning ok
-func (bp Blueprint) status(w http.ResponseWriter, r *http.Request) {
+func (bp *Blueprint) status(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	resp := new(types.DataResponse)
@@ -30,6 +28,6 @@ func (bp Blueprint) status(w http.ResponseWriter, r *http.Request) {
 }
 
 // NewBlueprint returns a new initialized Blueprint object.
-func NewBlueprint() webiface.BlueprintInterface {
+func NewBlueprint() *Blueprint {
 	return new(Blueprint)
 }

@@ -2,21 +2,20 @@ package status
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gorilla/mux"
+	chi "github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/shipperizer/miniature-monkey/types"
+	"github.com/shipperizer/miniature-monkey/v2/types"
 )
 
 func TestStatusSucceeds(t *testing.T) {
 	bp := NewBlueprint()
 
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("/api/v1/status"), nil)
+	req, err := http.NewRequest(http.MethodGet, "/api/v1/status", nil)
 	req.Header.Set("Content-Type", "application/json")
 
 	assert := assert.New(t)
@@ -24,7 +23,7 @@ func TestStatusSucceeds(t *testing.T) {
 	assert.Equal(nil, err, "error should be nil")
 
 	rr := httptest.NewRecorder()
-	router := mux.NewRouter()
+	router := chi.NewMux()
 	bp.Routes(router)
 	router.ServeHTTP(rr, req)
 

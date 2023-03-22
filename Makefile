@@ -12,7 +12,8 @@ APP_NAME?=web
 .EXPORT_ALL_VARIABLES:
 
 build:
-	$(MAKE) -C example/$(APP_NAME)/cmd build
+	$(GO) build -a -installsuffix nocgo -buildvcs=true -o $(GO_BIN) example/$(APP_NAME)/cmd
+	# $(MAKE) -C example/$(APP_NAME)/cmd build
 
 test: mocks vet
 	$(GO) test ./... -cover -coverprofile coverage.source.out

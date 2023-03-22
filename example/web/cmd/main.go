@@ -17,11 +17,13 @@ import (
 	"github.com/shipperizer/miniature-monkey/v2/core"
 	monConfig "github.com/shipperizer/miniature-monkey/v2/monitoring/config"
 	monCore "github.com/shipperizer/miniature-monkey/v2/monitoring/core"
+	tracing "github.com/shipperizer/miniature-monkey/v2/tracing"
 	"go.uber.org/zap"
 )
 
 type EnvSpec struct {
-	Port string `envconfig:"http_port" default:"8000"`
+	Port            string `envconfig:"http_port" default:"8000"`
+	TracingEndpoint string `envconfig:"tracing_endpoint" default:"http://jaeger.svc.cluster.local:14268/api/traces"`
 }
 
 type EchoBlueprint struct{}
@@ -58,6 +60,10 @@ func main() {
 	apiCfg := config.NewAPIConfig(
 		"web",
 		nil,
+		tracing.NewTracer(
+			tracing.NewTracerConfig("web", specs.TracingEndpoint, logger.Sugar()),
+			// tracing.NewTracerConfig("web", "", logger.Sugar()), for stdouttrace exporter
+		),
 		monitor,
 		logger.Sugar(),
 	)

@@ -8,7 +8,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/client_model v0.3.0
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.2
 	go.uber.org/zap v1.24.0
 )
 

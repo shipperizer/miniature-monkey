@@ -11,9 +11,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//go:generate mockgen -package generics -destination ./mock_monitor.go -source=../../monitoring/core/interfaces.go MonitorInterface
-//go:generate mockgen -package generics -destination ./mock_metrics.go -source=../../monitoring/types/interfaces.go MetricInterface
-//go:generate mockgen -package generics -destination ./mock_logger.go -source=../../logging/interfaces.go LoggerInterface
+//go:generate mockgen -build_flags=--mod=mod -package generics -destination ./mock_monitor.go -source=../../monitoring/core/interfaces.go MonitorInterface
+//go:generate mockgen -build_flags=--mod=mod -package generics -destination ./mock_metrics.go -source=../../monitoring/types/interfaces.go MetricInterface
+//go:generate mockgen -build_flags=--mod=mod -package generics -destination ./mock_logger.go -source=../../logging/interfaces.go LoggerInterface
 
 type Blueprint struct{}
 

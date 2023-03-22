@@ -1,5 +1,24 @@
 # Changelog
 
+## [2.0.0](https://github.com/shipperizer/miniature-monkey/compare/v1.0.1...v2.0.0) (2023-03-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* move to use go-chi
+
+### Features
+
+* add logging package ([356bb10](https://github.com/shipperizer/miniature-monkey/commit/356bb10eca7af219141f8c7d2dfaeb4017baff6e))
+* add monitoring package ([2b63d3b](https://github.com/shipperizer/miniature-monkey/commit/2b63d3bd0efba61e545c23d5898f018135767ec0))
+* move to use go-chi ([d380c60](https://github.com/shipperizer/miniature-monkey/commit/d380c604087553c36abcb55cf454f7bc05ffc28d))
+* split middlewares into separate package ([ba19558](https://github.com/shipperizer/miniature-monkey/commit/ba19558a2633f9e839e349d9b8e9e1c0d9bbe055))
+
+
+### Bug Fixes
+
+* adjust to chi types ([ef3a4e0](https://github.com/shipperizer/miniature-monkey/commit/ef3a4e0f827bb9e1c6a6c42a945b73e338e436be))
+
 ### [1.0.1](https://www.github.com/shipperizer/miniature-monkey/compare/v1.0.0...v1.0.1) (2021-10-01)
 
 

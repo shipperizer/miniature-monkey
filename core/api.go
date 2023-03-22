@@ -4,13 +4,13 @@ import (
 	"net/http"
 
 	chi "github.com/go-chi/chi/v5"
-	"github.com/go-chi/cors"
+	cors "github.com/go-chi/cors"
+	trace "go.opentelemetry.io/otel/trace"
 
 	"github.com/shipperizer/miniature-monkey/v2/logging"
 	"github.com/shipperizer/miniature-monkey/v2/middlewares/generics"
 	core "github.com/shipperizer/miniature-monkey/v2/monitoring/core"
 	web "github.com/shipperizer/miniature-monkey/v2/monitoring/web"
-
 	"github.com/shipperizer/miniature-monkey/v2/status"
 	"github.com/shipperizer/miniature-monkey/v2/webiface"
 )
@@ -25,38 +25,28 @@ type API struct {
 
 	router *chi.Mux
 
+	tracer  trace.Tracer
 	monitor core.MonitorInterface
 	logger  logging.LoggerInterface
 }
 
-func (a *API) useCORS() {
-	cfg := a.cfg.GetCORSConfig()
-
-	if cfg == nil {
-		return
-	}
-
-	origins := cfg.GetOrigins()
-
-	a.router.Use(
-		cors.Handler(
-			cors.Options{
-				AllowedOrigins: origins,
-				AllowedMethods: []string{
-					http.MethodHead,
-					http.MethodGet,
-					http.MethodPost,
-					http.MethodPut,
-					http.MethodPatch,
-					http.MethodDelete,
-				},
-				AllowedHeaders:   []string{"*"},
-				AllowCredentials: true,
-				MaxAge:           300, // Maximum value not ignored by any of major browsers
+func (a *API) middlewareCORS(origins []string) func(http.Handler) http.Handler {
+	return cors.Handler(
+		cors.Options{
+			AllowedOrigins: origins,
+			AllowedMethods: []string{
+				http.MethodHead,
+				http.MethodGet,
+				http.MethodPost,
+				http.MethodPut,
+				http.MethodPatch,
+				http.MethodDelete,
 			},
-		),
+			AllowedHeaders:   []string{"*"},
+			AllowCredentials: true,
+			MaxAge:           300, // Maximum value not ignored by any of major browsers
+		},
 	)
-
 }
 
 // Handler returns an http handler created from the main router
@@ -98,21 +88,28 @@ func NewAPI(cfg APIConfigInterface) *API {
 	api.name = cfg.GetServiceName()
 	api.cfg = cfg
 	api.monitor = cfg.GetMonitor()
+	api.tracer = cfg.GetTracer()
 	api.router = chi.NewMux()
 	api.logger = cfg.GetLogger()
 
-	// apply API timer and count middlewares by default
+	mdws := make(chi.Middlewares, 0)
+
+	// TODO @shipperizer use a better middleware
+	// if api.tracer != nil {
+	// 	mdws = append(mdws, otelchi.Middleware(api.name, otelchi.WithChiRoutes(api.router)))
+	// }
+
 	if api.monitor != nil {
-		mdws := make(chi.Middlewares, 0)
-
 		mdw := generics.NewMiddleware(api.monitor, api.logger)
-
 		mdws = append(mdws, mdw.APITime())
-
-		api.UseMiddlewares(nil, mdws...)
 	}
 
-	api.useCORS()
+	if c := api.cfg.GetCORSConfig(); c != nil {
+
+		mdws = append(mdws, api.middlewareCORS(c.GetOrigins()))
+	}
+
+	api.UseMiddlewares(nil, mdws...)
 
 	// register monitoring blueprint by default
 	api.RegisterBlueprints(

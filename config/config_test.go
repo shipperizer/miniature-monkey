@@ -9,18 +9,21 @@ import (
 	"github.com/shipperizer/miniature-monkey/v2/logging"
 )
 
-//go:generate mockgen -package config -destination ./mock_config.go -source=./interfaces.go CORSConfigInterface
-//go:generate mockgen -package config -destination ./mock_monitor.go -source=../monitoring/core/interfaces.go MonitorInterface
+//go:generate mockgen -build_flags=--mod=mod -package config -destination ./mock_tracer.go go.opentelemetry.io/otel/trace Tracer
+//go:generate mockgen -build_flags=--mod=mod -package config -destination ./mock_config.go -source=./interfaces.go CORSConfigInterface
+//go:generate mockgen -build_flags=--mod=mod -package config -destination ./mock_monitor.go -source=../monitoring/core/interfaces.go MonitorInterface
 
 func TestAPIConfigGetCORSConfig(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	mockCORS := NewMockCORSConfigInterface(ctrl)
 	mockMonitor := NewMockMonitorInterface(ctrl)
+	mockTracer := NewMockTracer(ctrl)
 
 	cfg := NewAPIConfig(
 		"shipperizer",
 		mockCORS,
+		mockTracer,
 		mockMonitor,
 		nil,
 	)
@@ -35,12 +38,14 @@ func TestAPIConfigGetService(t *testing.T) {
 	defer ctrl.Finish()
 	mockCORS := NewMockCORSConfigInterface(ctrl)
 	mockMonitor := NewMockMonitorInterface(ctrl)
+	mockTracer := NewMockTracer(ctrl)
 
 	svc := "shipperizer"
 
 	cfg := NewAPIConfig(
 		svc,
 		mockCORS,
+		mockTracer,
 		mockMonitor,
 		nil,
 	)
@@ -55,11 +60,13 @@ func TestAPIConfigGetLogger(t *testing.T) {
 	defer ctrl.Finish()
 	mockCORS := NewMockCORSConfigInterface(ctrl)
 	mockMonitor := NewMockMonitorInterface(ctrl)
+	mockTracer := NewMockTracer(ctrl)
 	logger := logging.NewLogger("debug")
 
 	cfg := NewAPIConfig(
 		"shipperizer",
 		mockCORS,
+		mockTracer,
 		mockMonitor,
 		logger,
 	)
@@ -78,6 +85,7 @@ func TestAPIConfigGetLoggerIfNilPassed(t *testing.T) {
 	cfg := NewAPIConfig(
 		"shipperizer",
 		mockCORS,
+		nil,
 		mockMonitor,
 		nil,
 	)
@@ -96,6 +104,7 @@ func TestAPIConfigGetMonitor(t *testing.T) {
 	cfg := NewAPIConfig(
 		"shipperizer",
 		mockCORS,
+		nil,
 		mockMonitor,
 		nil,
 	)

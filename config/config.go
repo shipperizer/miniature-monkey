@@ -3,6 +3,7 @@ package config
 import (
 	"github.com/shipperizer/miniature-monkey/v2/logging"
 	core "github.com/shipperizer/miniature-monkey/v2/monitoring/core"
+	trace "go.opentelemetry.io/otel/trace"
 )
 
 // CORSConfig holds the origins to be CORS-allowed
@@ -30,6 +31,7 @@ type APIConfig struct {
 
 	cors CORSConfigInterface
 
+	tracer  trace.Tracer
 	monitor core.MonitorInterface
 	logger  logging.LoggerInterface
 }
@@ -37,6 +39,11 @@ type APIConfig struct {
 // GetServiceName returns the a friendly name for the service
 func (c *APIConfig) GetServiceName() string {
 	return c.name
+}
+
+// GetTracer returns the tracer object
+func (c *APIConfig) GetTracer() trace.Tracer {
+	return c.tracer
 }
 
 // GetMonitor returns the monitor object
@@ -55,10 +62,11 @@ func (c *APIConfig) GetLogger() logging.LoggerInterface {
 }
 
 // NewAPIConfig returns a config object for the API object, if the logger arg is empty a new one with error level is created
-func NewAPIConfig(name string, cors CORSConfigInterface, monitor core.MonitorInterface, logger logging.LoggerInterface) *APIConfig {
+func NewAPIConfig(name string, cors CORSConfigInterface, tracer trace.Tracer, monitor core.MonitorInterface, logger logging.LoggerInterface) *APIConfig {
 	c := new(APIConfig)
 	c.name = name
 	c.cors = cors
+	c.tracer = tracer
 	c.monitor = monitor
 	c.logger = logger
 

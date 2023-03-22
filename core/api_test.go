@@ -10,10 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-//go:generate mockgen -package core -destination ./mock_webiface.go -source=../webiface/interfaces.go APIInterface
-//go:generate mockgen -package core -destination ./mock_config.go -source=../config/interfaces.go CORSConfigInterface
-//go:generate mockgen -package core -destination ./mock_monitor.go -source=../monitoring/core/interfaces.go MonitorInterface
-//go:generate mockgen -package core -destination ./mock_core.go -source=./interfaces.go APIConfigInterface
+//go:generate mockgen -build_flags=--mod=mod -package core -destination ./mock_tracer.go go.opentelemetry.io/otel/trace Tracer
+//go:generate mockgen -build_flags=--mod=mod -package core -destination ./mock_webiface.go -source=../webiface/interfaces.go APIInterface
+//go:generate mockgen -build_flags=--mod=mod -package core -destination ./mock_config.go -source=../config/interfaces.go CORSConfigInterface
+//go:generate mockgen -build_flags=--mod=mod -package core -destination ./mock_monitor.go -source=../monitoring/core/interfaces.go MonitorInterface
+//go:generate mockgen -build_flags=--mod=mod -package core -destination ./mock_core.go -source=./interfaces.go APIConfigInterface
 
 func TestAPIRouterReturnChiMux(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -24,6 +25,7 @@ func TestAPIRouterReturnChiMux(t *testing.T) {
 	mockConfig.EXPECT().GetMonitor().Times(1).Return(nil)
 	mockConfig.EXPECT().GetLogger().Times(1).Return(nil)
 	mockConfig.EXPECT().GetCORSConfig().Times(1).Return(nil)
+	mockConfig.EXPECT().GetTracer().Times(1).Return(nil)
 
 	newApi := NewAPI(mockConfig)
 
@@ -43,6 +45,7 @@ func TestAPIHandlerImplementHttpHandler(t *testing.T) {
 	mockConfig.EXPECT().GetMonitor().Times(1).Return(nil)
 	mockConfig.EXPECT().GetLogger().Times(1).Return(nil)
 	mockConfig.EXPECT().GetCORSConfig().Times(1).Return(mockCORS)
+	mockConfig.EXPECT().GetTracer().Times(1).Return(nil)
 
 	newApi := NewAPI(mockConfig)
 
@@ -56,14 +59,15 @@ func TestAPIAddStatusAndMonitoring(t *testing.T) {
 	defer ctrl.Finish()
 	mockConfig := NewMockAPIConfigInterface(ctrl)
 	mockMonitor := NewMockMonitorInterface(ctrl)
+	mockTracer := NewMockTracer(ctrl)
 
 	mockConfig.EXPECT().GetCORSConfig().Times(1).Return(nil)
 	mockConfig.EXPECT().GetServiceName().Times(1).Return("test")
 	mockConfig.EXPECT().GetMonitor().Times(1).Return(mockMonitor)
 	mockConfig.EXPECT().GetLogger().Times(1).Return(nil)
+	mockConfig.EXPECT().GetTracer().Times(1).Return(mockTracer)
 	mockMonitor.EXPECT().GetService().Times(1).Return("test")
 	mockMonitor.EXPECT().AddMetrics(gomock.Any()).Times(1).Return(nil)
-
 	newAPI := NewAPI(mockConfig)
 
 	assert := assert.New(t)

@@ -6,7 +6,7 @@
 [![codecov](https://codecov.io/gh/shipperizer/miniature-monkey/badge/branch/main/graph/badge.svg)](https://codecov.io/gh/shipperizer/miniature-monkey/badge)
 [![Go Reference](https://pkg.go.dev/badge/github.com/shipperizer/miniature-monkey.svg)](https://pkg.go.dev/github.com/shipperizer/miniature-monkey)
 
-Miniature Monkey simply bootstraps a simple http application with `gorilla/mux`, adding a couple of endpoints like status and the prometheus metrics handler.
+Miniature Monkey simply bootstraps a simple http application with `go-chi/chi/v5`, adding a couple of endpoints like status and the prometheus metrics handler.
 
 The `API` struct offers a set of methods to add endpoints via the `BlueprintInterface` abstraction, also you can register Middleware functions 
 
@@ -18,46 +18,86 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/shipperizer/miniature-monkey/config"
-	"github.com/shipperizer/miniature-monkey/core"
-	"github.com/shipperizer/miniature-monkey/utils"
-	monitoringLibrary "github.com/some/monitoring/library"
+	chi "github.com/go-chi/chi/v5"
+
+	"github.com/kelseyhightower/envconfig"
+	"github.com/shipperizer/miniature-monkey/v2/config"
+	"github.com/shipperizer/miniature-monkey/v2/core"
+	monConfig "github.com/shipperizer/miniature-monkey/v2/monitoring/config"
+	monCore "github.com/shipperizer/miniature-monkey/v2/monitoring/core"
+	"go.uber.org/zap"
 )
 
-func main() {
-	monitor := monitoringLibrary.NewMonitor()
-	logger := utils.NewLogger("info")
+type EnvSpec struct {
+	Port string `envconfig:"http_port" default:"8000"`
+}
 
-	apiCfg := config.NewAPIConfig(
-		"test-api",
-		config.NewCORSConfig("google.com"),
-		monitor,
-		logger,
+type EchoBlueprint struct{}
+
+func (b *EchoBlueprint) Routes(router *chi.Mux) {
+	router.Get(
+		"/api/v0/echo",
+		func(w http.ResponseWriter, r *http.Request) {
+			// an example API handler
+			json.NewEncoder(w).Encode(map[string]bool{"echo": true})
+		},
+	)
+}
+
+func main() {
+	logger, err := zap.NewDevelopment()
+	defer logger.Sync()
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	var specs EnvSpec
+	err = envconfig.Process("", &specs)
+
+	if err != nil {
+		logger.Sugar().Fatal(err.Error())
+	}
+
+	monitor := monCore.NewMonitor(
+		monConfig.NewMonitorConfig("web", nil, logger.Sugar()),
 	)
 
+	apiCfg := config.NewAPIConfig(
+		"web",
+		nil,
+		monitor,
+		logger.Sugar(),
+	)
+
+	api := core.NewAPI(apiCfg)
+
+	api.RegisterBlueprints(api.Router(), new(EchoBlueprint))
+
 	srv := &http.Server{
-		Addr: "0.0.0.0:8000",
-		// Good practice to set timeouts to avoid Slowloris attacks.
+		Addr:         fmt.Sprintf("0.0.0.0:%s", specs.Port),
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler:      core.NewApi(apiCfg).Handler(),
+		Handler:      api.Handler(),
 	}
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
-			logger.Fatal(err)
+			logger.Sugar().Fatal(err)
 		}
 	}()
 
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGKILL)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 
 	// Block until we receive our signal.
 	<-c
@@ -71,7 +111,8 @@ func main() {
 	// Optionally, you could run srv.Shutdown in a goroutine and block on
 	// <-ctx.Done() if your application should wait for other services
 	// to finalize based on context cancellation.
-	logger.Info("Shutting down")
+	logger.Sugar().Info("Shutting down")
 	os.Exit(0)
 }
+
 ```

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.0](https://github.com/shipperizer/miniature-monkey/compare/v2.0.0...v2.1.0) (2023-03-28)
+
+
+### Features
+
+* enhance status endpoint with build info ([cb2f726](https://github.com/shipperizer/miniature-monkey/commit/cb2f726d3393b68a3d6c4657ffd69f62de820130))
+* inject tracer object ([7e96169](https://github.com/shipperizer/miniature-monkey/commit/7e961692053416bd773461e4c8d7c3066aff6633))
+* introduce otel monitoring ([0795c2a](https://github.com/shipperizer/miniature-monkey/commit/0795c2a7ca2e0ab80dd25cad1b5871691c794974))
+
 ## [2.0.0](https://github.com/shipperizer/miniature-monkey/compare/v1.0.1...v2.0.0) (2023-03-22)
 
 

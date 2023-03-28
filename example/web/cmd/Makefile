@@ -12,4 +12,4 @@ MAIN_DIR?=/var/app
 .EXPORT_ALL_VARIABLES:
 
 build:
-	$(GO) build -a -installsuffix nocgo -buildvcs=true -o $(GO_BIN)
+	$(GO) build -a -buildvcs=auto -o $(GO_BIN)

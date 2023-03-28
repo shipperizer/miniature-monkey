@@ -32,15 +32,7 @@ jobs:
           GO_BIN: ${{ github.workspace }}/app
           MAIN_DIR: ${{ github.workspace }}
       - name: Build example application
-        run: |
-          set -euo pipefail
-          ls -la
-          
-          git config --system --add safe.directory *
-          # git config --global --add safe.directory *
-          git status
-          make build
-          go version -m ${{ github.workspace }}/app
+        run: make build
         env:
           GIT_CURL_VERBOSE: 1
           GIT_TRACE: 1

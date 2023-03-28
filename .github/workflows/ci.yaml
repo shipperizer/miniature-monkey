@@ -39,6 +39,6 @@ jobs:
           GO111MODULE: "on"
           GO_BIN: ${{ github.workspace }}/app
           MAIN_DIR: ${{ github.workspace }}
-      - uses: codecov/codecov-action@v2
+      - uses: codecov/codecov-action@v3
         with:
           files: ./coverage.out

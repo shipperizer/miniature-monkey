@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/shipperizer/miniature-monkey/compare/v2.1.0...v2.1.1) (2023-03-29)
+
+
+### Bug Fixes
+
+* use plain request path instead of chi context RoutePath ([632226b](https://github.com/shipperizer/miniature-monkey/commit/632226b477967f5d4f6e81fa725f082c5dffe650))
+
 ## [2.1.0](https://github.com/shipperizer/miniature-monkey/compare/v2.0.0...v2.1.0) (2023-03-28)
 
 

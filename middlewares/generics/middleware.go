@@ -6,8 +6,6 @@ import (
 	"regexp"
 	"time"
 
-	chi "github.com/go-chi/chi/v5"
-
 	"github.com/shipperizer/miniature-monkey/v2/logging"
 	core "github.com/shipperizer/miniature-monkey/v2/monitoring/core"
 	types "github.com/shipperizer/miniature-monkey/v2/monitoring/types"
@@ -33,7 +31,7 @@ func (mdw Middleware) APITime() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(
 			func(w http.ResponseWriter, r *http.Request) {
-				path := chi.RouteContext(r.Context()).RoutePath
+				path := r.URL.Path
 				tags := map[string]string{"service": mdw.service, "route": fmt.Sprintf("%s%s", r.Method, mdw.regex.ReplaceAll([]byte(path), []byte("id")))}
 
 				m, err := mdw.monitor.GetMetric("http_server_handling_seconds_v1")
